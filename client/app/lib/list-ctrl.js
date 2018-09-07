@@ -17,6 +17,10 @@ export default class ListCtrl {
     if (this.pageOrderReverse) {
       this.pageOrder = this.pageOrder.substr(1);
     }
+    // this stores the previously applied order to restore to when
+    // return back from search mode (since we want to use the search ranking
+    // order there)
+    this.previousPageOrder = null;
 
     this.defaultOptions = {};
 
@@ -24,7 +28,6 @@ export default class ListCtrl {
     // $parent refers to scope created for the page by router
     this.resource = $scope.$parent.$resolve.resource;
     this.currentPage = $scope.$parent.$resolve.currentPage;
-
     this.currentUser = currentUser;
 
     this.showEmptyState = false;
@@ -38,19 +41,41 @@ export default class ListCtrl {
 
     this.isInSearchMode = () => this.searchTerm !== undefined && this.searchTerm !== null && this.searchTerm.length > 0;
 
-    const fetcher = (requestedPage, itemsPerPage, orderByField, orderByReverse) => {
+    const fetcher = (requestedPage, itemsPerPage, orderByField, orderByReverse, paginator, requested = false) => {
       $location.search('page', requestedPage);
       $location.search('page_size', itemsPerPage);
+      // store the currently applied order for later use
+      // when returning froms search mode
+      this.previousPageOrder = orderByField;
+      this.previousPageOrderReverse = orderByReverse;
 
-      if (orderByReverse && !orderByField.startsWith(this.orderSeparator)) {
+      // in search mode ignore the ordering and use the ranking order
+      // provided by the server-side FTS backend instead, unless it was
+      // requested by the user by actively ordering in search mode
+      if (this.isInSearchMode() && !requested) {
+        orderByField = undefined;
+      } else {
+        if (this.previousPageOrder) {
+          orderByField = this.previousPageOrder;
+          this.previousPageOrder = null;
+        }
+        if (this.previousPageOrderReverse) {
+          orderByReverse = this.previousPageOrderReverse;
+          this.previousPageOrderReverse = null;
+        }
+      }
+      // keep a record of what order has been applied
+      this.pageOrder = orderByField;
+      this.pageOrderReverse = orderByReverse;
+      // pass the current ordering state to the paginator
+      // so the sort icons work correctly
+      paginator.orderByField = orderByField;
+      paginator.orderByReverse = orderByReverse;
+      // combine the ordering field and direction in one query parameter
+      if (orderByField && orderByReverse && !orderByField.startsWith(this.orderSeparator)) {
         orderByField = this.orderSeparator + orderByField;
       }
-      if (orderByField) {
-        $location.search('order', orderByField);
-      } else {
-        $location.search('order', undefined);
-      }
-
+      $location.search('order', orderByField);
       const request = this.getRequest(requestedPage, itemsPerPage, orderByField);
 
       if (this.searchTerm === '') {
@@ -80,8 +105,12 @@ export default class ListCtrl {
     };
 
     this.update = () => {
-      // `queriesFetcher` will be called by paginator
-      this.paginator.setPage(this.page, this.pageSize);
+      this.paginator.setPage(
+        this.page,
+        this.pageSize,
+        this.pageOrder,
+        this.pageOrderReverse,
+      );
     };
   }
 

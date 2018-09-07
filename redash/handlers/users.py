@@ -5,7 +5,7 @@ from flask_login import current_user
 from funcy import project
 from sqlalchemy.exc import IntegrityError
 from disposable_email_domains import blacklist
-from funcy import rpartial
+from funcy import partial
 
 from redash import models
 from redash.permissions import require_permission, require_admin_or_owner, is_admin_or_owner, \
@@ -25,7 +25,12 @@ order_map = {
     '-groups': '-group_ids',
 }
 
-order_results = rpartial(_order_results, '-created_at', order_map)
+order_results = partial(
+    _order_results,
+    default_order='-created_at',
+    allowed_orders=order_map,
+)
+
 
 def invite_user(org, inviter, user):
     invite_url = invite_link_for_user(user)
@@ -49,13 +54,13 @@ class UserListResource(BaseResource):
 
                 if group:
                     user_groups.append({'id': group.id, 'name': group.name})
-            
+
             d['groups'] = user_groups
 
             return d
 
         search_term = request.args.get('q', '')
-        
+
         if request.args.get('disabled', None) is not None:
             users = models.User.all_disabled(self.current_org)
         else:
@@ -63,10 +68,13 @@ class UserListResource(BaseResource):
 
         if search_term:
             users = models.User.search(users, search_term)
-        
-        users = order_results(users)
 
-        return paginate(users, page, page_size, serialize_user)
+        # order results according to passed order parameter,
+        # special-casing search queries where the database
+        # provides an order by search rank
+        ordered_users = order_results(users, fallback=bool(search_term))
+
+        return paginate(ordered_users, page, page_size, serialize_user)
 
     @require_admin
     def post(self):
