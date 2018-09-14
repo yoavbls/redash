@@ -1,8 +1,8 @@
-import json
 import os
 import urlparse
 import urllib
 
+import simplejson
 
 def parse_db_url(url):
     url_parts = urlparse.urlparse(url)
@@ -39,7 +39,7 @@ def set_from_string(s):
 
 
 def parse_boolean(str):
-    return json.loads(str.lower())
+    return simplejson.loads(str.lower())
 
 
 def int_or_none(value):

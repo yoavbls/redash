@@ -1,10 +1,10 @@
-import json
 import requests
 import re
 
 from collections import OrderedDict
 
 from redash.query_runner import *
+from redash.utils import json_dumps, json_loads
 
 
 # TODO: make this more general and move into __init__.py
@@ -24,7 +24,7 @@ class ResultSet(object):
             self.columns[column] = {'name': column, 'type': column_type, 'friendly_name': column}
 
     def to_json(self):
-        return json.dumps({'rows': self.rows, 'columns': self.columns.values()})
+        return json_dumps({'rows': self.rows, 'columns': self.columns.values()})
 
 
 def parse_issue(issue, field_mapping):
@@ -176,7 +176,7 @@ class JiraJQL(BaseQueryRunner):
         jql_url = '{}/rest/api/2/search'.format(self.configuration["url"])
 
         try:
-            query = json.loads(query)
+            query = json_loads(query)
             query_type = query.pop('queryType', 'select')
             field_mapping = FieldMapping(query.pop('fieldMapping', {}))
 

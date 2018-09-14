@@ -1,4 +1,3 @@
-import json
 import logging
 import numbers
 import re
@@ -11,7 +10,7 @@ from redash.permissions import has_access, not_view_only
 from redash.query_runner import (TYPE_BOOLEAN, TYPE_DATETIME, TYPE_FLOAT,
                                  TYPE_INTEGER, TYPE_STRING, BaseQueryRunner,
                                  register)
-from redash.utils import JSONEncoder
+from redash.utils import json_dumps, json_loads
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +70,7 @@ def create_tables_from_query_ids(user, connection, query_ids):
             raise Exception(
                 "Failed loading results for query id {}.".format(query.id))
 
-        results = json.loads(results)
+        results = json_loads(results)
         table_name = 'query_{query_id}'.format(query_id=query_id)
         create_table(connection, table_name, results)
 
@@ -151,7 +150,7 @@ class Results(BaseQueryRunner):
 
                 data = {'columns': columns, 'rows': rows}
                 error = None
-                json_data = json.dumps(data, cls=JSONEncoder)
+                json_data = json_dumps(data)
             else:
                 error = 'Query completed but it returned no data.'
                 json_data = None

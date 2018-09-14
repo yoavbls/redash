@@ -1,5 +1,3 @@
-import json
-
 from flask import request
 from flask_login import current_user, login_required
 from redash import models

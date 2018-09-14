@@ -1,12 +1,12 @@
-import json
-
 from flask import request
 from flask_login import login_required
+
 from redash import models, redis_connection
 from redash.handlers import routes
 from redash.handlers.base import json_response
 from redash.permissions import require_super_admin
 from redash.tasks.queries import QueryTaskTracker
+from redash.utils import json_loads
 
 
 @routes.route('/api/admin/queries/outdated', methods=['GET'])
@@ -14,7 +14,7 @@ from redash.tasks.queries import QueryTaskTracker
 @login_required
 def outdated_queries():
     manager_status = redis_connection.hgetall('redash:status')
-    query_ids = json.loads(manager_status.get('query_ids', '[]'))
+    query_ids = json_loads(manager_status.get('query_ids', '[]'))
     if query_ids:
         outdated_queries = (models.db.session.query(models.Query)
                             .outerjoin(models.QueryResult)
