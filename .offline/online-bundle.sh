@@ -62,13 +62,13 @@ bundle_folder() {
 }
 
 
-#build_client
-#download_pip_modules
-#sleep 1
-#tar_artifacts
-#sleep 1
-# build_base_image
-# build_offline_image
+build_client
+download_pip_modules
+sleep 1
+tar_artifacts
+sleep 1
+build_base_image
+build_offline_image
 initial_instance
 save_production_images
 bundle_folder
