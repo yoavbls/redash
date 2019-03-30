@@ -168,6 +168,23 @@
           </label>
         </div>
       </div>
+
+      <div ng-if="column.displayAs == 'html'">
+        <div class="form-group">
+            <label for="table-editor-{{ column.name }}-html-template">HTML template</label>
+            <textarea style="resize: vertical" rows="3" class="form-control" ng-model="column.htmlTemplate" 
+              ng-model-options="{ allowInvalid: true, debounce: 200 }" id="table-editor-{{ column.name }}-html-template">
+            </textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="ui-sortable-bypass text-muted" style="font-weight: normal; cursor: pointer;"
+            uib-popover-html="templateHint"
+            popover-trigger="'click outsideClick'" popover-placement="top-left">
+            Format specs <i class="fa fa-question-circle m-l-5"></i>
+          </label>
+        </div>
+      </div>
     </div>
   </div>
 </div>
