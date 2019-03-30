@@ -1,14 +1,15 @@
 import { includes, identity } from 'lodash';
-import { renderDefault, renderImage, renderLink } from './utils';
+import { renderDefault, renderImage, renderLink, renderHTML } from './utils';
 import template from './template.html';
 
 const renderFunctions = {
   image: renderImage,
   link: renderLink,
+  html: renderHTML,
 };
 
 export default function init(ngModule) {
-  ngModule.directive('dynamicTableDefaultCell', $sanitize => ({
+  ngModule.directive('dynamicTableDefaultCell', ($sanitize, $sce) => ({
     template,
     restrict: 'E',
     replace: true,
@@ -22,14 +23,13 @@ export default function init(ngModule) {
       // 1. `column` object will be always "fresh" - no need to watch it.
       // 2. we will always have a column object already available in `link` function.
       // Note that `row` may change during this directive's lifetime.
-
       if ($scope.column.displayAs === 'string') {
         $scope.allowHTML = $scope.column.allowHTML;
       } else {
-        $scope.allowHTML = includes(['image', 'link'], $scope.column.displayAs);
+        $scope.allowHTML = includes(['image', 'link', 'html'], $scope.column.displayAs);
       }
 
-      const sanitize = $scope.allowHTML ? $sanitize : identity;
+      const sanitize = $scope.allowHTML ? $sce.trustAsHtml : identity;
 
       const renderValue = renderFunctions[$scope.column.displayAs] || renderDefault;
 

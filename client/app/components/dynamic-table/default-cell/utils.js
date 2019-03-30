@@ -64,3 +64,7 @@ export function renderLink(column, row) {
 
   return result.join(' ');
 }
+
+export function renderHTML(column, row) {
+  return trim(processTags(column.htmlTemplate, row, column.name));
+}

@@ -15,6 +15,7 @@ const DISPLAY_AS_OPTIONS = [
   { name: 'JSON', value: 'json' },
   { name: 'Image', value: 'image' },
   { name: 'Link', value: 'link' },
+  { name: 'HTML', value: 'html' },
 ];
 
 const DEFAULT_OPTIONS = {
