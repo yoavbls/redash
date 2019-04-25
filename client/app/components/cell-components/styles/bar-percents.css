@@ -1,0 +1,24 @@
+.bar {
+  border: 2px solid #333;
+  height: 22px;
+  width: 60px;
+  padding: 2px;
+  border-radius: 2px;
+  position: relative;
+  display: inline-block;
+}
+
+.bar-level {
+  background: #30b455;
+  position: absolute;
+  left: 0px;
+  bottom: 0;
+  right: 0;
+  top: 0;
+}
+.bar-level.bar-warning {
+  background-color: #efaf13;
+}
+.bar-level.bar-danger {
+  background-color: #e81309;
+}
