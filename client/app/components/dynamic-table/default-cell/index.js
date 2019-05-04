@@ -1,14 +1,18 @@
-import { includes, identity } from 'lodash';
-import { renderDefault, renderImage, renderLink } from './utils';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { includes } from 'lodash';
+import { renderDefault, renderImage, renderLink, renderHTML } from './utils';
+import { JsxParse } from '@/components/cell-components/JsxParse';
 import template from './template.html';
 
 const renderFunctions = {
   image: renderImage,
   link: renderLink,
+  html: renderHTML,
 };
 
 export default function init(ngModule) {
-  ngModule.directive('dynamicTableDefaultCell', $sanitize => ({
+  ngModule.directive('dynamicTableDefaultCell', ($sce, $compile) => ({
     template,
     restrict: 'E',
     replace: true,
@@ -16,30 +20,21 @@ export default function init(ngModule) {
       column: '=',
       row: '=',
     },
-    link: ($scope) => {
+    link: ($scope, $element) => {
       // `dynamicTable` will recreate all table cells if some columns changed.
       // This means two things:
       // 1. `column` object will be always "fresh" - no need to watch it.
       // 2. we will always have a column object already available in `link` function.
       // Note that `row` may change during this directive's lifetime.
-
-      if ($scope.column.displayAs === 'string') {
-        $scope.allowHTML = $scope.column.allowHTML;
-      } else {
-        $scope.allowHTML = includes(['image', 'link'], $scope.column.displayAs);
-      }
-
-      const sanitize = $scope.allowHTML ? $sanitize : identity;
-
       const renderValue = renderFunctions[$scope.column.displayAs] || renderDefault;
-
-      $scope.value = sanitize(renderValue($scope.column, $scope.row));
-
-      $scope.$watch('row', (newValue, oldValue) => {
-        if (newValue !== oldValue) {
-          $scope.value = sanitize(renderValue($scope.column, $scope.row));
-        }
-      });
+      const temp = `<div>${renderValue($scope.column, $scope.row)}</div>`;
+      if (($scope.column.displayAs === 'string' && $scope.column.allowHTML) || includes(['image', 'link'], $scope.column.displayAs)) {
+        $element.append($compile(temp)($scope));
+      } else if ($scope.column.displayAs === 'html') {
+        ReactDOM.render(React.createElement(JsxParse, { jsx: temp }, null), $element[0]);
+      } else {
+        $element.append(`${temp}`);
+      }
     },
   }));
 }
