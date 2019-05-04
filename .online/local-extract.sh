@@ -1,8 +1,6 @@
 #!/bin/bash
 # ------ Needs to be run from redash.txt folder context! ------
 [ "$UID" -eq 0 ] || exec sudo bash "$0" "$@" # Eleveta to root
-DOCKER=docker.exe                        # Set docker binary (docker.exe working in wsl)
-DOCKER_COMPOSE=docker-compose.exe        # Set docker binary (docker-compose.exe working in wsl)
 
 
 decode_txt_file() {
@@ -14,7 +12,7 @@ decode_txt_file() {
 
 extract_tar_files() {
     echo "Extract tar.gz file..." && $ext_cmd redash.txt.tar.gz | tar xzf - -C .
-    echo "Extracting Artifact..." && $ext_cmd redash/.offline/artifact.tar | tar xkf - -C ./redash
+    echo "Extracting Artifact..." && $ext_cmd redash/.online/artifact.tar | tar xkf - -C ./redash
 }
 
 load_images() {
