@@ -32,7 +32,7 @@ initial_instance() {
 
 save_production_images() {
     # Collect Image names
-    images=('redash/base:latest', 'redash_server:latest', 'redash_worker:latest')
+    images=('redash/base:latest' 'redash_server:latest' 'redash_worker:latest')
     for img in $(cat docker-compose.yml | awk '{if ($1 == "image:") print $2;}'); do
         images+=($img)
     done
